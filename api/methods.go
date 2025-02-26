@@ -64,28 +64,39 @@ func (user UserJSON) toUser() internal.User {
 	}
 }
 
+func (j JsonProvider) getJsonData() ([]UserJSON, error) {
+	
+	// Read the JSON file from the specified path
+	data, err := os.ReadFile(j.Path)
+	if err != nil {
+		return nil, fmt.Errorf("error reading JSON file: %w", err)
+	}
+	
+	// Unmarshal the JSON data into a slice of UserJSON structs
+	var usersJSON []UserJSON
+	if err := json.Unmarshal(data, &usersJSON); err != nil {
+		return nil, fmt.Errorf("error unmarshalling JSON: %w", err)
+	}
+	
+	return usersJSON, nil
+}
+
 // Migrate is here to implement the UserCRUD interface, nothing else.
 func (j JsonProvider) Migrate(model any) error {
 	return nil
 }
 
 // Count gets the number of users in the JSON file.
-func (j JsonProvider) Count(model any) int {
+func (j JsonProvider) Count(model any) (int, error) {
 	
-	// Read the JSON file from the specified path
-	data, err := os.ReadFile(j.Path)
+	// Get users from JSON file
+	usersJSON, err := j.getJsonData()
 	if err != nil {
-		return 0
-	}
-	
-	// Unmarshal the JSON data into a slice of UserJSON structs
-	var usersJSON []UserJSON
-	if err := json.Unmarshal(data, &usersJSON); err != nil {
-		return 0
+		return 0, err
 	}
 	
 	// Return the number of items in the list
-	return len(usersJSON)
+	return len(usersJSON), nil
 }
 
 // Create append data in the JSON file.
@@ -105,7 +116,7 @@ func (j JsonProvider) Create(data any) error {
 	// Get all users from JSON file.
 	allUsers, err := j.GetAll()
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting all users from JSON: %w", err)
 	}
 	
 	// Look for new users
@@ -125,13 +136,13 @@ func (j JsonProvider) Create(data any) error {
 		// Convert allUsers to JSON format
 		newData, err := json.MarshalIndent(allUsers, "", "\t")
 		if err != nil {
-			return err
+			return fmt.Errorf("error marshalling JSON: %w", err)
 		}
 		
 		// Write allUsers to JSON file
 		err = os.WriteFile(j.Path, newData, 0644)
 		if err != nil {
-			return err
+			return fmt.Errorf("error writing JSON: %w", err)
 		}
 	}
 	
@@ -141,15 +152,9 @@ func (j JsonProvider) Create(data any) error {
 // GetByID retrieves a user by their ID from the JSON file.
 func (j JsonProvider) GetByID(id uint) (*internal.User, error) {
 	
-	// Read the JSON file from the specified path
-	data, err := os.ReadFile(j.Path)
+	// Get users from JSON file
+	usersJSON, err := j.getJsonData()
 	if err != nil {
-		return nil, err
-	}
-	
-	// Unmarshal the JSON data into a slice of UserJSON structs
-	var usersJSON []UserJSON
-	if err := json.Unmarshal(data, &usersJSON); err != nil {
 		return nil, err
 	}
 	
@@ -170,15 +175,9 @@ func (j JsonProvider) GetByID(id uint) (*internal.User, error) {
 // GetByUsername retrieves a user by their username from the JSON file.
 func (j JsonProvider) GetByUsername(username string) (*internal.User, error) {
 	
-	// Read the JSON file from the specified path
-	data, err := os.ReadFile(j.Path)
+	// Get users from JSON file
+	usersJSON, err := j.getJsonData()
 	if err != nil {
-		return nil, err
-	}
-	
-	// Unmarshal the JSON data into a slice of UserJSON structs
-	var usersJSON []UserJSON
-	if err := json.Unmarshal(data, &usersJSON); err != nil {
 		return nil, err
 	}
 	
@@ -199,15 +198,9 @@ func (j JsonProvider) GetByUsername(username string) (*internal.User, error) {
 // GetByEmail retrieves a user by their email from the JSON file.
 func (j JsonProvider) GetByEmail(email string) (*internal.User, error) {
 	
-	// Read the JSON file from the specified path
-	data, err := os.ReadFile(j.Path)
+	// Get users from JSON file
+	usersJSON, err := j.getJsonData()
 	if err != nil {
-		return nil, err
-	}
-	
-	// Unmarshal the JSON data into a slice of UserJSON structs
-	var usersJSON []UserJSON
-	if err := json.Unmarshal(data, &usersJSON); err != nil {
 		return nil, err
 	}
 	
@@ -227,15 +220,10 @@ func (j JsonProvider) GetByEmail(email string) (*internal.User, error) {
 
 // GetAll retrieves all users from the JSON file.
 func (j JsonProvider) GetAll() ([]*internal.User, error) {
-	// Read the JSON file from the specified path
-	data, err := os.ReadFile(j.Path)
-	if err != nil {
-		return nil, err
-	}
 	
-	// Unmarshal the JSON data into a slice of UserJSON structs
-	var usersJSON []UserJSON
-	if err := json.Unmarshal(data, &usersJSON); err != nil {
+	// Get users from JSON file
+	usersJSON, err := j.getJsonData()
+	if err != nil {
 		return nil, err
 	}
 	

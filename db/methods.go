@@ -10,10 +10,10 @@ func (d DatabaseProvider) Migrate(model any) error {
 }
 
 // Count gets the number of rows in a table according to the model passed.
-func (d DatabaseProvider) Count(model any) int {
+func (d DatabaseProvider) Count(model any) (int, error) {
 	var count int64
 	d.Model(model).Count(&count)
-	return int(count)
+	return int(count), nil
 }
 
 // Create adds data in the database according to the model passed.

@@ -11,7 +11,7 @@ type CRUDStrategy interface {
 	Migrate(model any) error
 	
 	// Count gets the number of users stored
-	Count(model any) int
+	Count(model any) (int, error)
 	
 	// Create inserts data in the provider.
 	Create(data any) error
