@@ -46,15 +46,14 @@ func main() {
 	}
 	
 	// Create users if they don't already exist in the database
-	var i int64
-	if app.DB.Count(&internal.User{}) == 0 {
+	if count, err := app.DB.Count(&internal.User{}); count == 0 {
 		fmt.Println("No users found: adding users...")
 		err = app.DB.Create(users)
 		if err != nil {
 			exitError(fmt.Errorf("creating users failed: %w", err))
 		}
 	} else {
-		fmt.Printf("%d Users already exist: skipping...\n", i)
+		fmt.Printf("%d Users already exist: skipping...\n", count)
 	}
 	
 	// Get the user Emily Smith from JSON file by ID
