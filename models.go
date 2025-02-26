@@ -1,13 +1,21 @@
 package main
 
 import (
-	"InterfaceTest/api"
-	"InterfaceTest/db"
 	"InterfaceTest/internal"
 )
 
-// UserCRUD interface defines methods for CRUD operations on users.
-type UserCRUD interface {
+// CRUDStrategy interface defines methods for CRUD operations on users.
+type CRUDStrategy interface {
+	
+	// Migrate creates the database (only provided for databases kind of provider)
+	Migrate(model any) error
+	
+	// Count gets the number of users stored
+	Count(model any) int
+	
+	// Create inserts data in the provider.
+	Create(data any) error
+	
 	// GetByID retrieves a user by their ID.
 	GetByID(id uint) (*internal.User, error)
 	
@@ -23,6 +31,6 @@ type UserCRUD interface {
 
 // application struct holds dependencies for the application.
 type application struct {
-	DB   db.DbModel
-	JSON api.JsonModel
+	DB   CRUDStrategy
+	JSON CRUDStrategy
 }

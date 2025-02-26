@@ -4,8 +4,26 @@ import (
 	"InterfaceTest/internal"
 )
 
+// Migrate creates the database according to the model passed.
+func (d DatabaseProvider) Migrate(model any) error {
+	return d.DB.AutoMigrate(model)
+}
+
+// Count gets the number of rows in a table according to the model passed.
+func (d DatabaseProvider) Count(model any) int {
+	var count int64
+	d.Model(model).Count(&count)
+	return int(count)
+}
+
+// Create adds data in the database according to the model passed.
+func (d DatabaseProvider) Create(model any) error {
+	d.DB.Create(model)
+	return nil
+}
+
 // GetByID retrieves a user by its ID from the database, including its associated company and address information.
-func (d DbModel) GetByID(id uint) (*internal.User, error) {
+func (d DatabaseProvider) GetByID(id uint) (*internal.User, error) {
 	var user internal.User
 	
 	// Query the database for a user with the specified ID, joining with Company, Company.Address, and Address tables
@@ -15,7 +33,7 @@ func (d DbModel) GetByID(id uint) (*internal.User, error) {
 }
 
 // GetByUsername retrieves a user by its username from the database, including its associated company and address information.
-func (d DbModel) GetByUsername(username string) (*internal.User, error) {
+func (d DatabaseProvider) GetByUsername(username string) (*internal.User, error) {
 	var user internal.User
 	
 	// Query the database for a user with the specified username, joining with Company, Company.Address, and Address tables
@@ -25,7 +43,7 @@ func (d DbModel) GetByUsername(username string) (*internal.User, error) {
 }
 
 // GetByEmail retrieves a user by its email from the database, including its associated company and address information.
-func (d DbModel) GetByEmail(email string) (*internal.User, error) {
+func (d DatabaseProvider) GetByEmail(email string) (*internal.User, error) {
 	var user internal.User
 	
 	// Query the database for a user with the specified email, joining with Company, Company.Address, and Address tables
@@ -35,7 +53,7 @@ func (d DbModel) GetByEmail(email string) (*internal.User, error) {
 }
 
 // GetAll retrieves all users from the database, including their associated company and address information.
-func (d DbModel) GetAll() ([]*internal.User, error) {
+func (d DatabaseProvider) GetAll() ([]*internal.User, error) {
 	var users []*internal.User
 	
 	// Query the database for all users, joining with Company, Company.Address, and Address tables

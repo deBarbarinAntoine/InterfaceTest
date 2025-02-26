@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	
@@ -63,8 +64,82 @@ func (user UserJSON) toUser() internal.User {
 	}
 }
 
+// Migrate is here to implement the UserCRUD interface, nothing else.
+func (j JsonProvider) Migrate(model any) error {
+	return nil
+}
+
+// Count gets the number of users in the JSON file.
+func (j JsonProvider) Count(model any) int {
+	
+	// Read the JSON file from the specified path
+	data, err := os.ReadFile(j.Path)
+	if err != nil {
+		return 0
+	}
+	
+	// Unmarshal the JSON data into a slice of UserJSON structs
+	var usersJSON []UserJSON
+	if err := json.Unmarshal(data, &usersJSON); err != nil {
+		return 0
+	}
+	
+	// Return the number of items in the list
+	return len(usersJSON)
+}
+
+// Create append data in the JSON file.
+func (j JsonProvider) Create(data any) error {
+	
+	// Checking the data type
+	var users []internal.User
+	switch data.(type) {
+	case internal.User:
+		users = append(users, data.(internal.User))
+	case []internal.User:
+		users = data.([]internal.User)
+	default:
+		return errors.New("invalid data type")
+	}
+	
+	// Get all users from JSON file.
+	allUsers, err := j.GetAll()
+	if err != nil {
+		return err
+	}
+	
+	// Look for new users
+	var isNewUser bool
+	for _, user := range users {
+		for _, existentUser := range allUsers {
+			if user.ID != existentUser.ID && user.Email != existentUser.Email && user.Username != existentUser.Username {
+				isNewUser = true
+				allUsers = append(allUsers, &user)
+			}
+		}
+	}
+	
+	// Update JSON file if there are new users
+	if isNewUser {
+		
+		// Convert allUsers to JSON format
+		newData, err := json.MarshalIndent(allUsers, "", "\t")
+		if err != nil {
+			return err
+		}
+		
+		// Write allUsers to JSON file
+		err = os.WriteFile(j.Path, newData, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	
+	return nil
+}
+
 // GetByID retrieves a user by their ID from the JSON file.
-func (j JsonModel) GetByID(id uint) (*internal.User, error) {
+func (j JsonProvider) GetByID(id uint) (*internal.User, error) {
 	
 	// Read the JSON file from the specified path
 	data, err := os.ReadFile(j.Path)
@@ -93,7 +168,7 @@ func (j JsonModel) GetByID(id uint) (*internal.User, error) {
 }
 
 // GetByUsername retrieves a user by their username from the JSON file.
-func (j JsonModel) GetByUsername(username string) (*internal.User, error) {
+func (j JsonProvider) GetByUsername(username string) (*internal.User, error) {
 	
 	// Read the JSON file from the specified path
 	data, err := os.ReadFile(j.Path)
@@ -122,7 +197,7 @@ func (j JsonModel) GetByUsername(username string) (*internal.User, error) {
 }
 
 // GetByEmail retrieves a user by their email from the JSON file.
-func (j JsonModel) GetByEmail(email string) (*internal.User, error) {
+func (j JsonProvider) GetByEmail(email string) (*internal.User, error) {
 	
 	// Read the JSON file from the specified path
 	data, err := os.ReadFile(j.Path)
@@ -151,7 +226,7 @@ func (j JsonModel) GetByEmail(email string) (*internal.User, error) {
 }
 
 // GetAll retrieves all users from the JSON file.
-func (j JsonModel) GetAll() ([]*internal.User, error) {
+func (j JsonProvider) GetAll() ([]*internal.User, error) {
 	// Read the JSON file from the specified path
 	data, err := os.ReadFile(j.Path)
 	if err != nil {

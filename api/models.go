@@ -72,8 +72,8 @@ type UserJSON struct {
 	Role string `json:"role"` // Role or permission level of the user in the system
 }
 
-// JsonModel represents a model for handling JSON data.
-type JsonModel struct {
+// JsonProvider represents a model for handling JSON data.
+type JsonProvider struct {
 	
 	// Path to the JSON file
 	Path string

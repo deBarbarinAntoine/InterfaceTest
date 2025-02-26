@@ -4,8 +4,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// DbModel represents a model for handling database data.
-type DbModel struct {
+// DatabaseProvider represents a model for handling database data.
+type DatabaseProvider struct {
 	
 	// The connection to the database using GORM
 	*gorm.DB

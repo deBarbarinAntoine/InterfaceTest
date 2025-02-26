@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/user"
 	
 	"InterfaceTest/api"
 	"InterfaceTest/db"
@@ -30,12 +29,12 @@ func main() {
 	
 	// Create the application instance with its configuration
 	app := application{
-		DB:   db.DbModel{DB: dbConn},
-		JSON: api.JsonModel{Path: "data.json"},
+		DB:   db.DatabaseProvider{DB: dbConn},
+		JSON: api.JsonProvider{Path: "data.json"},
 	}
 	
 	// Migrate the schema
-	err = app.DB.AutoMigrate(&internal.User{})
+	err = app.DB.Migrate(&internal.User{})
 	if err != nil {
 		exitError(fmt.Errorf("migrations failed: %w", err))
 	}
@@ -48,9 +47,12 @@ func main() {
 	
 	// Create users if they don't already exist in the database
 	var i int64
-	if app.DB.Model(&user.User{}).Count(&i); i == 0 {
+	if app.DB.Count(&internal.User{}) == 0 {
 		fmt.Println("No users found: adding users...")
-		app.DB.Create(users)
+		err = app.DB.Create(users)
+		if err != nil {
+			exitError(fmt.Errorf("creating users failed: %w", err))
+		}
 	} else {
 		fmt.Printf("%d Users already exist: skipping...\n", i)
 	}
